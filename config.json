@@ -1,0 +1,26 @@
+{
+  "sessions": {
+    "use_sessions": true,
+    "london": ["07:00","10:00"],
+    "newyork": ["13:30","16:00"]
+  },
+  "confirmations": {
+    "atr_mult_displacement": 0.8,
+    "bos_lookback": 40,
+    "swing_left": 2,
+    "swing_right": 2,
+    "require_discount_for_longs": true,
+    "require_premium_for_shorts": true,
+    "require_fvg_retrace": true,
+    "require_sweep": true,
+    "require_disp_on_trigger": true,
+    "use_ote": true,
+    "ote_min": 0.62,
+    "ote_max": 0.79,
+    "use_smt": false
+  },
+  "risk": {
+    "rr": 2.0,
+    "partials_at_1r": true
+  }
+}
