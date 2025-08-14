@@ -69,5 +69,49 @@ def confluence_score(pair):
     df_m15 = get_candles(pair, "M15", 20)
     df_h1  = get_candles(pair, "H1", 20)
     df_h4  = get_candles(pair, "H4", 20)
-       if None in (df_m5, df_m15, df_h1, df_h4):
+    if None in (df_m5, df_m15, df_h1, df_h4):
         return 0, "Data missing"
+    score = 0
+    notes = []
+    if liquidity_sweep(df_m5):
+        score += 1; notes.append("Liquidity Sweep (M5)")
+    if fair_value_gap(df_m15):
+        score += 1; notes.append("FVG (M15)")
+    if liquidity_sweep(df_h1):
+        score += 1; notes.append("Liquidity Sweep (H1)")
+    if fair_value_gap(df_h4):
+        score += 1; notes.append("FVG (H4)")
+    # For SMT, compare EURUSD & GBPUSD if both in instruments
+    if "EUR_USD" in INSTRUMENTS and "GBP_USD" in INSTRUMENTS and pair == "EUR_USD":
+        df2 = get_candles("GBP_USD", "M15", 20)
+        if df2 is not None and smt_divergence(df_m15, df2):
+            score += 1; notes.append("SMT Divergence vs GBPUSD")
+    return score, ", ".join(notes)
+
+# === SL/TP Calculation ===
+def suggest_sl_tp(df, risk_reward=2.0, direction="long"):
+    if direction == "long":
+        sl = min(df["low"].tail(5))
+        tp = df.iloc[-1]["close"] + (df.iloc[-1]["close"] - sl) * risk_reward
+    else:
+        sl = max(df["high"].tail(5))
+        tp = df.iloc[-1]["close"] - (sl - df.iloc[-1]["close"]) * risk_reward
+    return sl, tp
+
+# === STARTUP ===
+log("🚀 Bot starting…")
+send_telegram("🚀 ICT Bot started — scanning multi-timeframes.")
+
+# === MAIN LOOP ===
+while True:
+    for pair in INSTRUMENTS:
+        log(f"Scanning {pair}...")
+        score, reasons = confluence_score(pair)
+        log(f"[{pair}] Score={score} — {reasons}")
+        if score >= 3 or (score == 2 and "strong" in reasons.lower()):
+            df_m5 = get_candles(pair, "M5", 20)
+            direction = "long" if "FVG" in reasons or "Liquidity Sweep" in reasons else "short"
+            sl, tp = suggest_sl_tp(df_m5, 2.0, direction)
+            alert = f"📊 ICT Setup on {pair}\nScore: {score}\nReasons: {reasons}\nSL: {sl}\nTP: {tp}"
+            send_telegram(alert)
+    time.sleep(60)  # run every minute
