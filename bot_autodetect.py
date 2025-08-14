@@ -69,5 +69,5 @@ def confluence_score(pair):
     df_m15 = get_candles(pair, "M15", 20)
     df_h1  = get_candles(pair, "H1", 20)
     df_h4  = get_candles(pair, "H4", 20)
-    if None in (df_m5, df_m15, df
-
+       if None in (df_m5, df_m15, df_h1, df_h4):
+        return 0, "Data missing"
