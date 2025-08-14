@@ -1,0 +1,22 @@
+services:
+  - type: worker
+    name: ict-sp500-oanda-bot
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: OANDA_ENV
+        value: practice
+      - key: OANDA_ACCOUNT_ID
+        sync: false
+      - key: OANDA_TOKEN
+        sync: false
+      - key: INSTRUMENTS
+        value: SPX500_USD,US500USD
+      - key: TELEGRAM_TOKEN
+        sync: false
+      - key: TELEGRAM_CHAT_ID
+        sync: false
+      - key: TIMEZONE
+        value: Australia/Sydney
